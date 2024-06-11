@@ -23,4 +23,17 @@ class DorDamBDRepository @Inject constructor(
                 emit(Resource.Error(errorMessage = exception.message ?: "An unknown exception occurred"))
             }
         }
+
+    suspend fun getPricesByItemId(itemId: Int) =
+        flow {
+            emit(Resource.Loading())
+            try {
+                val result = withTimeout(10_000) {
+                    dorDamBDAPI.getPricesByItemId(itemId)
+                }
+                emit(Resource.Success(result))
+            } catch (exception: Exception) {
+                emit(Resource.Error(errorMessage = exception.message ?: "An unknown exception occurred"))
+            }
+        }
 }
