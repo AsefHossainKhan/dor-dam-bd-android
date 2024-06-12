@@ -2,6 +2,8 @@ package com.asef.dordambdandroid.ui.screens.pricescreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.asef.dordambdandroid.data.remote.models.prices.addpricebyitemid.AddPriceByItemId
+import com.asef.dordambdandroid.data.remote.models.prices.addpricebyitemid.Item
 import com.asef.dordambdandroid.data.remote.models.prices.pricebyitemid.PriceByItemId
 import com.asef.dordambdandroid.repository.DorDamBDRepository
 import com.asef.dordambdandroid.util.Resource
@@ -51,6 +53,35 @@ class PriceViewModel @Inject constructor(
                             _hasError.value = false
                             _error.value = ""
                             _priceList.value = resource.data!!
+                        }
+                    }
+                }
+        }
+    }
+
+    fun addPrice(itemId: Int, price: Float) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = dorDamBDRepository.addPriceByItemId(AddPriceByItemId(item = Item(itemId), price = price))
+            response.catch {
+                Timber.e("Error $this")
+            }
+                .collect { resource ->
+                    when (resource) {
+                        is Resource.Loading -> {
+                            _isLoading.value = true
+                        }
+
+                        is Resource.Error -> {
+                            _isLoading.value = false
+                            _hasError.value = true
+                            _priceList.value = PriceByItemId()
+                            _error.value = resource.errorMessage.toString()
+                        }
+
+                        is Resource.Success -> {
+                            _isLoading.value = false
+                            _hasError.value = false
+                            _error.value = ""
                         }
                     }
                 }

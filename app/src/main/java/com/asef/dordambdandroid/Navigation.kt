@@ -21,10 +21,17 @@ fun Navigation() {
         }
 
         composable(
-            route = Screen.PriceScreen.route + "/{itemId}",
-            arguments = listOf(navArgument("itemId") { type = NavType.IntType })
+            route = Screen.PriceScreen.route + "/{itemId}/{itemName}",
+            arguments = listOf(
+                navArgument("itemId") { type = NavType.IntType },
+                navArgument("itemName") { type = NavType.StringType }
+            )
         ) {
-            PriceScreen(navController, itemId = it.arguments?.getInt("itemId") ?: 0)
+            PriceScreen(
+                navController,
+                itemId = it.arguments?.getInt("itemId") ?: 0,
+                itemName = it.arguments?.getString("itemName") ?: ""
+            )
         }
     }
 }

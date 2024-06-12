@@ -1,6 +1,8 @@
 package com.asef.dordambdandroid.repository
 
 import com.asef.dordambdandroid.data.remote.DorDamBDAPI
+import com.asef.dordambdandroid.data.remote.models.items.createitem.CreateItem
+import com.asef.dordambdandroid.data.remote.models.prices.addpricebyitemid.AddPriceByItemId
 import com.asef.dordambdandroid.util.Resource
 import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.flow.flow
@@ -24,12 +26,38 @@ class DorDamBDRepository @Inject constructor(
             }
         }
 
+    suspend fun createItem(item: CreateItem) =
+        flow {
+            emit(Resource.Loading())
+            try {
+                val result = withTimeout(10_000) {
+                    dorDamBDAPI.createItem(item)
+                }
+                emit(Resource.Success(result))
+            } catch (exception: Exception) {
+                emit(Resource.Error(errorMessage = exception.message ?: "An unknown exception occurred"))
+            }
+        }
+
     suspend fun getPricesByItemId(itemId: Int) =
         flow {
             emit(Resource.Loading())
             try {
                 val result = withTimeout(10_000) {
                     dorDamBDAPI.getPricesByItemId(itemId)
+                }
+                emit(Resource.Success(result))
+            } catch (exception: Exception) {
+                emit(Resource.Error(errorMessage = exception.message ?: "An unknown exception occurred"))
+            }
+        }
+
+    suspend fun addPriceByItemId(addPriceByItemId: AddPriceByItemId) =
+        flow {
+            emit(Resource.Loading())
+            try {
+                val result = withTimeout(10_000) {
+                    dorDamBDAPI.addPrice(addPriceByItemId)
                 }
                 emit(Resource.Success(result))
             } catch (exception: Exception) {
