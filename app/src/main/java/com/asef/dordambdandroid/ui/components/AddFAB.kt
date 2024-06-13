@@ -46,7 +46,7 @@ fun AddFAB(
         ModalBottomSheet(
             sheetState = sheetState,
             onDismissRequest = {
-                closeSheet
+                closeSheet()
             },
             modifier = Modifier.imePadding()
         ) {
