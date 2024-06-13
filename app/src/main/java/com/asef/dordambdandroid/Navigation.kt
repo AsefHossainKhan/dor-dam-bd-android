@@ -9,9 +9,11 @@ import androidx.navigation.navArgument
 import com.asef.dordambdandroid.ui.screens.Screen
 import com.asef.dordambdandroid.ui.screens.homescreen.HomeScreen
 import com.asef.dordambdandroid.ui.screens.pricescreen.PriceScreen
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 
-@Composable()
+@Composable
 fun Navigation() {
     val navController = rememberNavController()
 
@@ -23,14 +25,20 @@ fun Navigation() {
         composable(
             route = Screen.PriceScreen.route + "/{itemId}/{itemName}",
             arguments = listOf(
-                navArgument("itemId") { type = NavType.IntType },
+                navArgument("itemId") { type = NavType.StringType },
                 navArgument("itemName") { type = NavType.StringType }
             )
         ) {
             PriceScreen(
                 navController,
-                itemId = it.arguments?.getInt("itemId") ?: 0,
-                itemName = it.arguments?.getString("itemName") ?: ""
+                itemId = URLDecoder.decode(
+                    it.arguments?.getString("itemId"),
+                    StandardCharsets.UTF_8.toString()
+                ).toInt(),
+                itemName = URLDecoder.decode(
+                    it.arguments?.getString("itemName"),
+                    StandardCharsets.UTF_8.toString()
+                ) ?: ""
             )
         }
     }

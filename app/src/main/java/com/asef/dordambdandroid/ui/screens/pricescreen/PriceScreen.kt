@@ -37,8 +37,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable()
+@Composable
 fun PriceScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
@@ -104,13 +103,13 @@ fun PriceScreen(
                     minuteFormat.timeZone = TimeZone.getDefault()
                     secondFormat.timeZone = TimeZone.getDefault()
                     amPmFormat.timeZone = TimeZone.getDefault()
-                    val day = dayFormat.format(date)
-                    val month = monthFormat.format(date)
-                    val year = yearFormat.format(date)
-                    val hour = hourFormat.format(date)
-                    val minute = minuteFormat.format(date)
-                    val second = secondFormat.format(date)
-                    val amPm = amPmFormat.format(date)
+                    val day = date?.let { it1 -> dayFormat.format(it1) }
+                    val month = date?.let { it1 -> monthFormat.format(it1) }
+                    val year = date?.let { it1 -> yearFormat.format(it1) }
+                    val hour = date?.let { it1 -> hourFormat.format(it1) }
+                    val minute = date?.let { it1 -> minuteFormat.format(it1) }
+                    val second = date?.let { it1 -> secondFormat.format(it1) }
+                    val amPm = date?.let { it1 -> amPmFormat.format(it1) }
 
                     Text(text = "$hour:$minute $amPm - $day/$month/$year")
                 }
@@ -119,7 +118,6 @@ fun PriceScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPriceFab(
     priceViewModel: PriceViewModel,

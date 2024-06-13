@@ -1,5 +1,8 @@
 package com.asef.dordambdandroid.ui.screens
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 sealed class Screen(val route: String) {
     object HomeScreen: Screen("home_screen")
 
@@ -9,7 +12,8 @@ sealed class Screen(val route: String) {
         return buildString {
             append(route)
             args.forEach {
-                append("/$it")
+                val encodedString = URLEncoder.encode(it, StandardCharsets.UTF_8.toString())
+                append("/$encodedString")
             }
         }
     }

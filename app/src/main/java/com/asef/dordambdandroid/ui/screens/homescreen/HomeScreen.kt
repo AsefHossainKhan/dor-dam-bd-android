@@ -63,11 +63,10 @@ fun HomeScreen(
                 ) {
                     Button(
                         onClick = {
-                            Timber.e("${item.name} --- ${item.id}")
                             navController.navigate(
                                 Screen.PriceScreen.withArgs(
                                     item.id.toString(),
-                                    item.name.toString()
+                                    item.name
                                 )
                             )
                         },
