@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.asef.dordambdandroid.data.remote.models.items.createitem.CreateItem
 import com.asef.dordambdandroid.data.remote.models.items.getitems.GetItems
+import com.asef.dordambdandroid.data.remote.models.items.getitems.GetItemsItem
 import com.asef.dordambdandroid.repository.DorDamBDRepository
 import com.asef.dordambdandroid.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import me.xdrop.fuzzywuzzy.FuzzySearch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -25,36 +27,68 @@ class HomeViewModel @Inject constructor(
     val hasError = _hasError.asStateFlow()
     private var _error = MutableStateFlow("")
     val error = _error.asStateFlow()
-    private var _itemList = MutableStateFlow(GetItems())
+    private var _itemList = MutableStateFlow(ArrayList<GetItemsItem>())
     val itemList = _itemList.asStateFlow()
+
+    private var _originalItemsList = GetItems()
+
+    private var _searchText = MutableStateFlow("")
+    val searchText = _searchText.asStateFlow()
+
+    fun changeSearchText(text: String) {
+        if (text.isEmpty()) {
+            _itemList.value = _originalItemsList
+        }
+
+        _searchText.value = text
+
+        if (_searchText.value.isNotEmpty()) {
+            val output = _originalItemsList
+                .asSequence()
+                .map { it to FuzzySearch.ratio(it.name, _searchText.value) }
+                .sortedByDescending { it.second }
+                .filter { it.second != 0 }
+                .take(5)
+                .map { it.first }
+                .toList()
+
+            _itemList.value = output as ArrayList<GetItemsItem>
+        }
+    }
+
+    private fun clearSearchText() {
+        changeSearchText("")
+    }
 
     fun getItems() {
         viewModelScope.launch(Dispatchers.IO) {
             val response = dorDamBDRepository.getItems()
             response.catch {
                 Timber.e("Error $this")
-            }.collect { resource ->
-                    when (resource) {
-                        is Resource.Loading -> {
-                            _isLoading.value = true
-                        }
+            }.collect {
+                when (it) {
+                    is Resource.Loading -> {
+                        _isLoading.value = true
+                    }
 
-                        is Resource.Error -> {
-                            _isLoading.value = false
-                            _hasError.value = true
-                            _itemList.value = GetItems()
-                            _error.value = resource.errorMessage.toString()
-                        }
+                    is Resource.Error -> {
+                        _isLoading.value = false
+                        _hasError.value = true
+                        _itemList.value = GetItems()
+                        _error.value = it.errorMessage.toString()
+                    }
 
-                        is Resource.Success -> {
-                            _isLoading.value = false
-                            _hasError.value = false
-                            _error.value = ""
+                    is Resource.Success -> {
+                        _isLoading.value = false
+                        _hasError.value = false
+                        _error.value = ""
 
-                            _itemList.value = resource.data!!
-                        }
+                        clearSearchText()
+                        _itemList.value = it.data!!
+                        _originalItemsList = it.data
                     }
                 }
+            }
         }
     }
 

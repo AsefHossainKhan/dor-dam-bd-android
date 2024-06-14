@@ -101,6 +101,9 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.44.2")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
+    // Fuzzy Wuzzy
+    implementation ("me.xdrop:fuzzywuzzy:1.2.0")
+
 }
 
 // Allow references to generated code
