@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -41,19 +42,36 @@ fun HomeScreen(
     val homeViewModel: HomeViewModel = hiltViewModel()
     val itemList by homeViewModel.itemList.collectAsState()
     val isLoading by homeViewModel.isLoading.collectAsState()
+    val searchText by homeViewModel.searchText.collectAsState()
     Timber.e(itemList.toString())
     LaunchedEffect(key1 = Unit) {
         homeViewModel.getItems()
     }
 
-    Scaffold(floatingActionButton = { AddItemFab(homeViewModel) }) {
+    Scaffold(floatingActionButton = { AddItemFab(homeViewModel) }) { padding ->
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(padding)
         ) {
-            PullToRefreshLazyColumn(items = itemList, isRefreshing = isLoading, onRefresh = {
+            PullToRefreshLazyColumn(
+                items = itemList,
+                isRefreshing = isLoading,
+                onRefresh = {
                 homeViewModel.getItems()
+            },
+                extraContent = {
+                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Items List")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = searchText,
+                        maxLines = 1,
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Done
+                        ),
+                        onValueChange = { homeViewModel.changeSearchText(it) })
+                }
             }) { item ->
                 Row(
                     modifier = Modifier

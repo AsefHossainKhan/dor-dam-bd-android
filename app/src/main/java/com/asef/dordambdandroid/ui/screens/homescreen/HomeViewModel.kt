@@ -52,7 +52,7 @@ class HomeViewModel @Inject constructor(
                 .map { it.first }
                 .toList()
 
-            _itemList.value = output as ArrayList<GetItemsItem>
+            _itemList.value = ArrayList(output.distinct())
         }
     }
 
