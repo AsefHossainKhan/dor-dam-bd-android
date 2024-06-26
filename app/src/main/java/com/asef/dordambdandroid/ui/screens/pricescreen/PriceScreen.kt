@@ -1,5 +1,7 @@
 package com.asef.dordambdandroid.ui.screens.pricescreen
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,12 +32,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.asef.dordambdandroid.ui.components.AddFAB
+import com.asef.dordambdandroid.ui.components.EditBottomSheet
 import com.asef.dordambdandroid.ui.components.PullToRefreshLazyColumn
+import com.asef.dordambdandroid.ui.screens.homescreen.EditItemBottomSheet
+import com.asef.dordambdandroid.ui.screens.homescreen.HomeViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PriceScreen(
     navController: NavController,
@@ -48,6 +54,7 @@ fun PriceScreen(
     val isLoading by priceViewModel.isLoading.collectAsState()
     LaunchedEffect(Unit) {
         priceViewModel.getPrices(itemId)
+        priceViewModel.setItemId(itemId)
     }
     Scaffold(floatingActionButton = {
         AddPriceFab(
@@ -80,7 +87,12 @@ fun PriceScreen(
                     }
                 }
             }) { item ->
-                Row(modifier = Modifier.fillMaxWidth(), Arrangement.SpaceEvenly) {
+                Row(modifier = Modifier.fillMaxWidth()
+                    .combinedClickable(enabled = true, onClick= {}, onLongClick = {
+                        priceViewModel.setPriceId(item.id)
+                        priceViewModel.setPrice(item.price)
+                        priceViewModel.openEditBottomSheet(true)
+                    }), Arrangement.SpaceEvenly) {
                     Text(text = item.price.toString() + " BDT")
                     val dateTimeFormat =
                         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
@@ -111,6 +123,48 @@ fun PriceScreen(
                     val amPm = date?.let { it1 -> amPmFormat.format(it1) }
 
                     Text(text = "$hour:$minute $amPm - $day/$month/$year")
+                }
+            }
+            EditPriceBottomSheet(priceViewModel = priceViewModel)
+        }
+    }
+}
+
+@Composable
+fun EditPriceBottomSheet(
+    priceViewModel: PriceViewModel
+) {
+    val modalSheetVisibility by priceViewModel.editBottomSheetVisibility.collectAsState()
+    val focusManager = LocalFocusManager.current
+    val price by priceViewModel.price.collectAsState()
+    val priceId by priceViewModel.priceId.collectAsState()
+    EditBottomSheet(modalSheetVisibility,
+        openSheet = { priceViewModel.openEditBottomSheet(true) },
+        closeSheet = { priceViewModel.openEditBottomSheet(false) }) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                OutlinedTextField(value = price.toString(),
+                    onValueChange = { priceViewModel.setPrice(it.toFloat()) },
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    label = {
+                        Text(
+                            text = "Edit Price"
+                        )
+                    })
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(onClick = {
+                    priceViewModel.editItem(priceId, price)
+                    priceViewModel.openEditBottomSheet(false)
+                    focusManager.clearFocus()
+                }) {
+                    Text(text = "Update Price")
                 }
             }
         }

@@ -2,8 +2,10 @@ package com.asef.dordambdandroid.ui.screens.pricescreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.asef.dordambdandroid.data.remote.models.items.edititem.EditItem
 import com.asef.dordambdandroid.data.remote.models.prices.addpricebyitemid.AddPriceByItemId
 import com.asef.dordambdandroid.data.remote.models.prices.addpricebyitemid.Item
+import com.asef.dordambdandroid.data.remote.models.prices.editprice.EditPrice
 import com.asef.dordambdandroid.data.remote.models.prices.pricebyitemid.PriceByItemId
 import com.asef.dordambdandroid.repository.DorDamBDRepository
 import com.asef.dordambdandroid.util.Resource
@@ -28,6 +30,34 @@ class PriceViewModel @Inject constructor(
     val error = _error.asStateFlow()
     private var _priceList = MutableStateFlow(PriceByItemId())
     val priceList = _priceList.asStateFlow()
+
+    private var _itemId = MutableStateFlow(0)
+    val itemId = _itemId.asStateFlow()
+
+    private var _editBottomSheetVisibility = MutableStateFlow(false)
+    val editBottomSheetVisibility = _editBottomSheetVisibility.asStateFlow()
+    private var _price = MutableStateFlow(0.0f)
+    val price = _price.asStateFlow()
+    private var _priceId = MutableStateFlow(0)
+    val priceId = _priceId.asStateFlow()
+    private var _priceTextError = MutableStateFlow("")
+    val priceTextError = _priceTextError.asStateFlow()
+
+    fun openEditBottomSheet(open: Boolean) {
+        _editBottomSheetVisibility.value = open
+    }
+
+    fun setPrice(price: Float) {
+        _price.value = price
+    }
+
+    fun setPriceId(id: Int) {
+        _priceId.value = id
+    }
+
+    fun setItemId(id: Int) {
+        _itemId.value = id
+    }
 
     fun getPrices(itemId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -82,9 +112,40 @@ class PriceViewModel @Inject constructor(
                             _isLoading.value = false
                             _hasError.value = false
                             _error.value = ""
+
+                            getPrices(itemId)
                         }
                     }
                 }
+        }
+    }
+
+    fun editItem(id: Int, price: Float) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = dorDamBDRepository.editPrice(id, EditPrice(price))
+            response.catch {
+                Timber.e("Error $this")
+            }.collect {
+                when (it) {
+                    is Resource.Loading -> {
+                        _isLoading.value = true
+                    }
+
+                    is Resource.Error -> {
+                        _isLoading.value = false
+                        _hasError.value = true
+                        _error.value = it.errorMessage.toString()
+                    }
+
+                    is Resource.Success -> {
+                        _isLoading.value = false
+                        _hasError.value = false
+                        _error.value = ""
+
+                        getPrices(itemId.value)
+                    }
+                }
+            }
         }
     }
 }

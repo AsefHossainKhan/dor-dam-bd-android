@@ -3,6 +3,7 @@ package com.asef.dordambdandroid.ui.screens.homescreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.asef.dordambdandroid.data.remote.models.items.createitem.CreateItem
+import com.asef.dordambdandroid.data.remote.models.items.edititem.EditItem
 import com.asef.dordambdandroid.data.remote.models.items.getitems.GetItems
 import com.asef.dordambdandroid.data.remote.models.items.getitems.GetItemsItem
 import com.asef.dordambdandroid.repository.DorDamBDRepository
@@ -30,10 +31,32 @@ class HomeViewModel @Inject constructor(
     private var _itemList = MutableStateFlow(ArrayList<GetItemsItem>())
     val itemList = _itemList.asStateFlow()
 
+    private var _editBottomSheetVisibility = MutableStateFlow(false)
+    val editBottomSheetVisibility = _editBottomSheetVisibility.asStateFlow()
+    private var _itemText = MutableStateFlow("")
+    val itemText = _itemText.asStateFlow()
+    private var _itemId = MutableStateFlow(0)
+    val itemId = _itemId.asStateFlow()
+    private var _itemTextError = MutableStateFlow("")
+    val itemTextError = _itemTextError.asStateFlow()
+
+
     private var _originalItemsList = GetItems()
 
     private var _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
+
+    fun openEditBottomSheet(open: Boolean) {
+        _editBottomSheetVisibility.value = open
+    }
+
+    fun setItemText(text: String) {
+        _itemText.value = text
+    }
+
+    fun setItemId(id: Int) {
+        _itemId.value = id
+    }
 
     fun changeSearchText(text: String) {
         if (text.isEmpty()) {
@@ -113,6 +136,37 @@ class HomeViewModel @Inject constructor(
                         _isLoading.value = false
                         _hasError.value = false
                         _error.value = ""
+
+                        getItems()
+                    }
+                }
+            }
+        }
+    }
+
+    fun editItem(id: Int, name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = dorDamBDRepository.editItem(id, EditItem(name))
+            response.catch {
+                Timber.e("Error $this")
+            }.collect {
+                when (it) {
+                    is Resource.Loading -> {
+                        _isLoading.value = true
+                    }
+
+                    is Resource.Error -> {
+                        _isLoading.value = false
+                        _hasError.value = true
+                        _error.value = it.errorMessage.toString()
+                    }
+
+                    is Resource.Success -> {
+                        _isLoading.value = false
+                        _hasError.value = false
+                        _error.value = ""
+
+                        getItems()
                     }
                 }
             }

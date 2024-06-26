@@ -12,24 +12,18 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddFAB(
+fun EditBottomSheet(
     modalSheetVisibility: Boolean,
     modifier: Modifier = Modifier,
     openSheet: () -> Unit,
     closeSheet: () -> Unit,
     content: @Composable () -> Unit,
 ) {
+
     val sheetState = rememberModalBottomSheetState()
-    FloatingActionButton(
-        modifier = modifier,
-        onClick = {
-            openSheet()
-        }
-    ) {
-        Icon(Icons.Default.Add, contentDescription = "Add a Record")
-    }
     if (modalSheetVisibility) {
         ModalBottomSheet(
             sheetState = sheetState,
