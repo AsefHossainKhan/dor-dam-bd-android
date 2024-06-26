@@ -208,7 +208,7 @@ fun AddPriceFab(
                     })
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(onClick = {
-                    priceViewModel.addPrice(itemId = itemId, price = price.toFloat())
+                    priceViewModel.addPrice(itemId = itemId, price = if (price.isNotEmpty()) price.toFloat() else 0.0f)
                     modalSheetVisibility = false
                     focusManager.clearFocus()
                 }) {
