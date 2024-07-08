@@ -1,0 +1,74 @@
+name : Android Release Build
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4.2.1
+        with:
+          distribution: 'adopt'
+          java-version: 17
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Update configuration
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+        run: |
+          sed -i "s#const val BASE_URL = \".*\"#const val BASE_URL = \"${BASE_URL}\"#" app/src/main/java/com/asef/dordambdandroid/util/Configuration.kt
+
+      - name: Create unsigned apk
+        run: ./gradlew assembleRelease
+
+      - name: Sign app APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE_64 }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0" # Optional, default value is "33.0.0"
+
+      - name: Extract Version Name from Build Gradle KTS
+        id: extract_version
+        run: |
+          VERSION_NAME=$(grep 'versionName\s*=' app/build.gradle.kts | sed -E 's/.*versionName\s*=\s*"([^"]+)".*/\1/')
+          echo "VERSION_NAME=${VERSION_NAME}" >> $GITHUB_ENV
+
+      - name: Rename APK File
+        run: |
+          VERSION_NAME=${{ steps.extract_version.outputs.VERSION_NAME }}
+          mv app/build/outputs/apk/release/app-release-unsigned-signed.apk app/build/outputs/apk/release/ddbd-v${{ env.VERSION_NAME }}.apk
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          tag_name: v${{ env.VERSION_NAME }}
+          release_name: Release v${{ env.VERSION_NAME }}
+          draft: false
+          prerelease: false
+
+      - name: Upload APK to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app/build/outputs/apk/release/ddbd-v${{ env.VERSION_NAME }}.apk
+          asset_name: ddbd-v${{ env.VERSION_NAME }}.apk
+          asset_content_type: application/vnd.android.package-archive
