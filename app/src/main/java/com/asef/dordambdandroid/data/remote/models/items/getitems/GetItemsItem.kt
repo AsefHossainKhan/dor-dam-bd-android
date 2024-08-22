@@ -7,7 +7,7 @@ data class GetItemsItem(
     @SerializedName("created_at")
     val createdAt: String = "",
     @SerializedName("created_by")
-    val createdBy: String = "",
+    val createdBy: String? = "",
     @SerializedName("id")
     val id: Int = 0,
     @SerializedName("name")
