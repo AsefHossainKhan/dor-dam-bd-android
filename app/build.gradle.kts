@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "com.asef.dordambdandroid"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.asef.dordambdandroid"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 4
         versionName = "1.0.4"
 
