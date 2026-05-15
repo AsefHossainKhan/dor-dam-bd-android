@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">Dor Dam BD Android</string>
+    <string name="search_items">Search items...</string>
+    <string name="price_increased">Price increased</string>
+    <string name="price_decreased">Price decreased</string>
+    <string name="enter_today_s_price">Enter today\'s price</string>
+    <string name="price_bdt">Price (BDT)</string>
+    <string name="submit_price">Submit Price</string>
+    <string name="edit_item">Edit Item</string>
+    <string name="update_the_item_name">Update the item name</string>
+    <string name="item_name">Item Name</string>
+    <string name="update_item">Update Item</string>
+    <string name="add_item">Add Item</string>
+    <string name="enter_a_new_item_name">Enter a new item name</string>
+    <string name="create_item">Create Item</string>
+    <string name="add">Add</string>
+    <string name="date_time"><![CDATA[Date & Time]]></string>
+    <string name="price">Price</string>
+    <string name="back">Back</string>
+    <string name="edit_price">Edit Price</string>
+    <string name="update_the_price_entry">Update the price entry</string>
+    <string name="update_price">Update Price</string>
+    <string name="add_price">Add Price</string>
 </resources>

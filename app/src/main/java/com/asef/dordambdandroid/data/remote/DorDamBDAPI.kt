@@ -5,6 +5,7 @@ import com.asef.dordambdandroid.data.remote.models.items.createitemresponse.Crea
 import com.asef.dordambdandroid.data.remote.models.items.edititem.EditItem
 import com.asef.dordambdandroid.data.remote.models.items.edititemresponse.EditItemResponse
 import com.asef.dordambdandroid.data.remote.models.items.getitems.GetItems
+import com.asef.dordambdandroid.data.remote.models.items.summary.ItemSummary
 import com.asef.dordambdandroid.data.remote.models.prices.addpricebyitemid.AddPriceByItemId
 import com.asef.dordambdandroid.data.remote.models.prices.addpriceresponse.AddPriceResponse
 import com.asef.dordambdandroid.data.remote.models.prices.editprice.EditPrice
@@ -19,6 +20,9 @@ import retrofit2.http.Path
 interface DorDamBDAPI {
     @GET("items")
     suspend fun getItems(): GetItems
+
+    @GET("items/summary")
+    suspend fun getItemsSummary(): List<ItemSummary>
 
     @PATCH("items/{id}")
     suspend fun editItem(

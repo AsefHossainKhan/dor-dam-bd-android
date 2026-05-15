@@ -1,4 +1,5 @@
 package com.asef.dordambdandroid.data.remote.models.items.getitems
 
-
-class GetItems : ArrayList<GetItemsItem>()
+data class GetItems(
+    val items: List<GetItemsItem>
+)
