@@ -60,12 +60,3 @@ val Typography = Typography(
         letterSpacing = 0.05.sp
     )
 )
-
-// Custom style for price display
-val PriceTextStyle = TextStyle(
-    fontFamily = FontFamily.Monospace, // Monospace for tabular figures
-    fontWeight = FontWeight.Bold,
-    fontSize = 18.sp,
-    lineHeight = 24.sp,
-    letterSpacing = 0.02.sp
-)

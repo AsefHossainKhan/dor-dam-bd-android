@@ -6,8 +6,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
@@ -72,12 +80,45 @@ private val DarkColorScheme = darkColorScheme(
     inversePrimary         = IndigoInversePrimaryDark,
 )
 
+// ── Custom extended colors ──────────────────────────────────────────────────
+@Immutable
+data class ExtendedColors(
+    val trendUp: Color = Color.Unspecified,
+    val trendDown: Color = Color.Unspecified,
+)
+
+val LocalExtendedColors = staticCompositionLocalOf { ExtendedColors() }
+
+// ── Custom extended typography ──────────────────────────────────────────────
+@Immutable
+data class ExtendedTypography(
+    val price: TextStyle = TextStyle.Default,
+)
+
+val LocalExtendedTypography = staticCompositionLocalOf { ExtendedTypography() }
+
 @Composable
 fun DorDamBDAndroidTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
+    val extendedColors = if (darkTheme) {
+        ExtendedColors(trendUp = DarkTrendUp, trendDown = DarkTrendDown)
+    } else {
+        ExtendedColors(trendUp = LightTrendUp, trendDown = LightTrendDown)
+    }
+
+    val extendedTypography = ExtendedTypography(
+        price = TextStyle(
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
+            letterSpacing = 0.02.sp
+        )
+    )
 
     val view = LocalView.current
     if (!view.isInEditMode) {
@@ -87,9 +128,14 @@ fun DorDamBDAndroidTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    CompositionLocalProvider(
+        LocalExtendedColors provides extendedColors,
+        LocalExtendedTypography provides extendedTypography,
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

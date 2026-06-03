@@ -59,14 +59,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.asef.dordambdandroid.R
 import com.asef.dordambdandroid.ui.components.AddFAB
 import com.asef.dordambdandroid.ui.components.EditBottomSheet
 import com.asef.dordambdandroid.ui.components.PullToRefreshLazyColumn
-import com.asef.dordambdandroid.ui.theme.PriceTextStyle
+import com.asef.dordambdandroid.ui.theme.LocalExtendedTypography
 import com.asef.dordambdandroid.util.formatDateTime
 import com.asef.dordambdandroid.util.formatPrice
 
@@ -203,9 +202,10 @@ fun PriceScreen(
                                     .padding(horizontal = 12.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                val priceStyle = LocalExtendedTypography.current.price
                                 Text(
                                     text = "৳",
-                                    style = PriceTextStyle.copy(fontSize = 16.sp),
+                                    style = priceStyle,
                                     color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(top = 1.dp)
                                 )
@@ -213,7 +213,7 @@ fun PriceScreen(
                                 Text(
                                     text = item.price.formatPrice(),
                                     color = MaterialTheme.colorScheme.primary,
-                                    style = PriceTextStyle.copy(fontSize = 16.sp)
+                                    style = priceStyle
                                 )
                             }
                         }

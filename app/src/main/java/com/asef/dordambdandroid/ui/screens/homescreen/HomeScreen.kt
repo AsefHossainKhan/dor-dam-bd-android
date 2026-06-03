@@ -11,7 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,7 +71,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.asef.dordambdandroid.R
@@ -81,7 +79,8 @@ import com.asef.dordambdandroid.ui.components.AddFAB
 import com.asef.dordambdandroid.ui.components.EditBottomSheet
 import com.asef.dordambdandroid.ui.components.PullToRefreshLazyColumn
 import com.asef.dordambdandroid.ui.screens.Screen
-import com.asef.dordambdandroid.ui.theme.PriceTextStyle
+import com.asef.dordambdandroid.ui.theme.LocalExtendedColors
+import com.asef.dordambdandroid.ui.theme.LocalExtendedTypography
 import com.asef.dordambdandroid.util.formatPrice
 import com.asef.dordambdandroid.util.relativeTime
 
@@ -248,17 +247,18 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
+                            val extendedColors = LocalExtendedColors.current
                             when (trend) {
                                 PriceTrend.UP -> Icon(
                                     imageVector = Icons.Default.KeyboardArrowUp,
                                     contentDescription = stringResource(R.string.price_increased),
-                                    tint = if (isSystemInDarkTheme()) Color(0xFF4ADE80) else Color(0xFF16A34A),
+                                    tint = extendedColors.trendUp,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 PriceTrend.DOWN -> Icon(
                                     imageVector = Icons.Default.KeyboardArrowDown,
                                     contentDescription = stringResource(R.string.price_decreased),
-                                    tint = if (isSystemInDarkTheme()) Color(0xFFF87171) else Color(0xFFDC2626),
+                                    tint = extendedColors.trendDown,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 else -> Spacer(modifier = Modifier.size(20.dp))
@@ -288,13 +288,14 @@ fun HomeScreen(
                                     .padding(horizontal = 10.dp, vertical = 6.dp),
                                 contentAlignment = Alignment.CenterStart
                             ) {
+                                val priceStyle = LocalExtendedTypography.current.price
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Start
                                 ) {
                                     Text(
                                         text = "৳",
-                                        style = PriceTextStyle.copy(fontSize = 16.sp),
+                                        style = priceStyle,
                                         color = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.padding(top = 2.dp) // Fine-tune baseline
                                     )
@@ -303,7 +304,7 @@ fun HomeScreen(
 
                                     Text(
                                         text = latestPrice?.price?.formatPrice() ?: stringResource(R.string.add),
-                                        style = PriceTextStyle.copy(fontSize = 16.sp),
+                                        style = priceStyle,
                                         color = MaterialTheme.colorScheme.primary,
                                         maxLines = 1
                                     )
