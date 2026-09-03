@@ -14,3 +14,10 @@
 .cxx
 local.properties
 app/release
+
+# KP Related items
+.kp-state.json
+AGENTS.md
+CLAUDE.md
+.claude/
+.github/copilot-instructions.md

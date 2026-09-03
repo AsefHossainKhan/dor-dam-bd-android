@@ -91,6 +91,7 @@ class HomeViewModel @Inject constructor(
         _quickAddSheetVisible.value = false
     }
 
+    // REQ: spec-90d023 — filter items by improved fuzzy name search
     fun changeSearchText(text: String) {
         if (text.isEmpty()) {
             _itemList.value = _originalItemsList
@@ -101,10 +102,10 @@ class HomeViewModel @Inject constructor(
         if (_searchText.value.isNotEmpty()) {
             val output = _originalItemsList
                 .asSequence()
-                .map { it to FuzzySearch.ratio(it.name, _searchText.value) }
+                .map { it to FuzzySearch.weightedRatio(it.name, _searchText.value) }
                 .sortedByDescending { it.second }
                 .filter { it.second != 0 }
-                .take(5)
+                .take(20)
                 .map { it.first }
                 .toList()
 
