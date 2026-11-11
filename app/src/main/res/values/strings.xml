@@ -21,4 +21,21 @@
     <string name="update_the_price_entry">Update the price entry</string>
     <string name="update_price">Update Price</string>
     <string name="add_price">Add Price</string>
+    <!-- Price location (SPEC-32, SPEC-33, SPEC-34) -->
+    <string name="location_optional">Location (optional)</string>
+    <string name="type_a_place">Type a place</string>
+    <string name="pick_on_map">Pick on map</string>
+    <string name="pinned_location">Pinned location</string>
+    <string name="keep_only">Keep only %1$s</string>
+    <string name="clear_location">Clear location</string>
+    <string name="tap_coarser_level_hint">Tap a coarser level to keep only that</string>
+    <string name="search_places_hint">Search places, e.g. Karwan Bazar</string>
+    <string name="add_new_place">Add “%1$s” as a new place</string>
+    <string name="add_new_place_hint">It becomes a suggestion for everyone nearby</string>
+    <string name="pin">Pin</string>
+    <string name="move_map_to_pin">Move the map so the pin sits where you paid</string>
+    <string name="name_this_place">Name this place (optional)</string>
+    <string name="use_this_spot">Use this spot</string>
+    <string name="osm_attribution">© OpenFreeMap © OpenStreetMap contributors</string>
+    <string name="price_location_line">📍 %1$s</string>
 </resources>

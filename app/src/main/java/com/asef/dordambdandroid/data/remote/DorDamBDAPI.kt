@@ -6,6 +6,9 @@ import com.asef.dordambdandroid.data.remote.models.items.edititem.EditItem
 import com.asef.dordambdandroid.data.remote.models.items.edititemresponse.EditItemResponse
 import com.asef.dordambdandroid.data.remote.models.items.getitems.GetItems
 import com.asef.dordambdandroid.data.remote.models.items.summary.ItemSummary
+import com.asef.dordambdandroid.data.remote.models.places.CreatePlace
+import com.asef.dordambdandroid.data.remote.models.places.NearbyPlaces
+import com.asef.dordambdandroid.data.remote.models.places.PlaceView
 import com.asef.dordambdandroid.data.remote.models.prices.addpricebyitemid.AddPriceByItemId
 import com.asef.dordambdandroid.data.remote.models.prices.addpriceresponse.AddPriceResponse
 import com.asef.dordambdandroid.data.remote.models.prices.editprice.EditPrice
@@ -16,6 +19,7 @@ import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface DorDamBDAPI {
     @GET("items")
@@ -50,4 +54,21 @@ interface DorDamBDAPI {
         @Path("id") priceId: Int,
         @Body price: EditPrice
     ): EditPriceResponse
+
+    // SPEC: spec-5f5a30, spec-14240b — places; all OSM traffic stays on the backend.
+    @GET("places/nearby")
+    suspend fun getNearbyPlaces(
+        @Query("lat") lat: Double,
+        @Query("lng") lng: Double,
+    ): NearbyPlaces
+
+    @GET("places/search")
+    suspend fun searchPlaces(
+        @Query("q") query: String,
+    ): List<PlaceView>
+
+    @POST("places")
+    suspend fun createPlace(
+        @Body place: CreatePlace
+    ): PlaceView
 }

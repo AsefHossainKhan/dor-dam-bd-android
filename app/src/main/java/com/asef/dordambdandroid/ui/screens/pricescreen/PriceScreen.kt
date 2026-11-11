@@ -2,6 +2,9 @@
 
 package com.asef.dordambdandroid.ui.screens.pricescreen
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -62,9 +65,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.asef.dordambdandroid.R
+import com.asef.dordambdandroid.data.remote.models.places.PlacePathStep
+import com.asef.dordambdandroid.location.shortPlaceLabel
 import com.asef.dordambdandroid.ui.components.AddFAB
 import com.asef.dordambdandroid.ui.components.EditBottomSheet
 import com.asef.dordambdandroid.ui.components.PullToRefreshLazyColumn
+import com.asef.dordambdandroid.ui.components.location.LocationChip
+import com.asef.dordambdandroid.ui.components.location.MapPickerDialog
+import com.asef.dordambdandroid.ui.components.location.PlaceSearchDialog
 import com.asef.dordambdandroid.ui.theme.LocalExtendedTypography
 import com.asef.dordambdandroid.util.formatDateTime
 import com.asef.dordambdandroid.util.formatPrice
@@ -78,6 +86,7 @@ fun PriceScreen(
     itemName: String,
 ) {
     val priceViewModel: PriceViewModel = hiltViewModel()
+    val locationViewModel: PriceLocationViewModel = hiltViewModel()
     val priceList by priceViewModel.priceList.collectAsState()
     val isLoading by priceViewModel.isLoading.collectAsState()
     LaunchedEffect(Unit) {
@@ -115,6 +124,7 @@ fun PriceScreen(
         floatingActionButton = {
             AddPriceFab(
                 priceViewModel = priceViewModel,
+                locationViewModel = locationViewModel,
                 itemId = itemId
             )
         }) { padding ->
@@ -170,7 +180,7 @@ fun PriceScreen(
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
                     )
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .combinedClickable(
@@ -180,65 +190,82 @@ fun PriceScreen(
                                 onLongClick = {
                                     priceViewModel.setPriceId(item.id)
                                     priceViewModel.setPrice(item.price)
+                                    locationViewModel.onEditSheetOpened(item)
                                     priceViewModel.openEditBottomSheet(true)
                                 }
                             )
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
                     ) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.CenterStart
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                                    .border(
-                                        1.dp,
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                        RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.CenterStart
                             ) {
-                                val priceStyle = LocalExtendedTypography.current.price
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                        .border(
+                                            1.dp,
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    val priceStyle = LocalExtendedTypography.current.price
+                                    Text(
+                                        text = "৳",
+                                        style = priceStyle,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(top = 1.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = item.price.formatPrice(),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        style = priceStyle
+                                    )
+                                }
+                            }
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
                                 Text(
-                                    text = "৳",
-                                    style = priceStyle,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(top = 1.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = item.price.formatPrice(),
-                                    color = MaterialTheme.colorScheme.primary,
-                                    style = priceStyle
+                                    text = formatDateTime(item.createdAt),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.End
                                 )
                             }
                         }
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.CenterEnd
-                        ) {
+                        // SPEC: spec-628f81 - a secondary line only when the price has a location.
+                        priceLocationLine(item.place?.pathOrSelf, item.locationSource)?.let { line ->
                             Text(
-                                text = formatDateTime(item.createdAt),
+                                text = line,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.End
+                                maxLines = 1,
+                                modifier = Modifier.padding(top = 6.dp)
                             )
                         }
                     }
                 }
             }
-            EditPriceBottomSheet(priceViewModel = priceViewModel)
+            EditPriceBottomSheet(priceViewModel = priceViewModel, locationViewModel = locationViewModel)
+            LocationDialogs(locationViewModel = locationViewModel)
         }
     }
 }
 
 @Composable
 fun EditPriceBottomSheet(
-    priceViewModel: PriceViewModel
+    priceViewModel: PriceViewModel,
+    locationViewModel: PriceLocationViewModel,
 ) {
     val modalSheetVisibility by priceViewModel.editBottomSheetVisibility.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -253,6 +280,14 @@ fun EditPriceBottomSheet(
         LaunchedEffect(Unit) { focusRequester.requestFocus() }
         var priceText by rememberSaveable { mutableStateOf(price.formatPrice()) }
         val isValid = priceText.toFloatOrNull()?.let { it > 0f } == true
+        val location by locationViewModel.editLocation.collectAsState()
+        val submit = {
+            if (isValid) {
+                priceViewModel.editItem(priceId, priceText.toFloat(), locationViewModel.editFields())
+                priceViewModel.openEditBottomSheet(false)
+                focusManager.clearFocus()
+            }
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -280,28 +315,25 @@ fun EditPriceBottomSheet(
                     keyboardType = KeyboardType.Decimal,
                     imeAction = ImeAction.Done
                 ),
-                keyboardActions = KeyboardActions(onDone = {
-                    if (isValid) {
-                        priceViewModel.editItem(priceId, priceText.toFloat())
-                        priceViewModel.openEditBottomSheet(false)
-                        focusManager.clearFocus()
-                    }
-                }),
+                keyboardActions = KeyboardActions(onDone = { submit() }),
                 label = { Text(text = stringResource(R.string.price_bdt)) },
                 prefix = { Text("৳ ") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
             )
+            Spacer(modifier = Modifier.height(12.dp))
+            // SPEC: spec-628f81 - the same chip, but no GPS suggestions and no permission prompt.
+            LocationChip(
+                location = location,
+                onTrim = { locationViewModel.trim(LocationTarget.EDIT, it) },
+                onClear = { locationViewModel.clear(LocationTarget.EDIT) },
+                onTypePlace = { locationViewModel.openSearch(LocationTarget.EDIT) },
+                onPickOnMap = { locationViewModel.openMap(LocationTarget.EDIT) },
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = {
-                    if (isValid) {
-                        priceViewModel.editItem(priceId, priceText.toFloat())
-                        priceViewModel.openEditBottomSheet(false)
-                        focusManager.clearFocus()
-                    }
-                },
+                onClick = { submit() },
                 enabled = isValid,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -314,17 +346,55 @@ fun EditPriceBottomSheet(
 @Composable
 fun AddPriceFab(
     priceViewModel: PriceViewModel,
+    locationViewModel: PriceLocationViewModel,
     itemId: Int
 ) {
     var modalSheetVisibility by rememberSaveable { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
+    // SPEC: spec-5f5a30 - ask for fine location (approximate allowed) on first use only.
+    // Whatever the answer, the sheet works; with no permission the chip offers typing and pinning.
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { locationViewModel.onAddSheetOpened() }
     AddFAB(
         modalSheetVisibility,
-        openSheet = { modalSheetVisibility = true },
-        closeSheet = { modalSheetVisibility = false }
+        openSheet = {
+            modalSheetVisibility = true
+            if (locationViewModel.shouldAskPermission()) {
+                locationViewModel.markPermissionAsked()
+                permissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            } else {
+                locationViewModel.onAddSheetOpened()
+            }
+        },
+        closeSheet = {
+            modalSheetVisibility = false
+            locationViewModel.onAddSheetClosed()
+        }
     ) {
         var price by rememberSaveable { mutableStateOf("") }
         val isValid = price.toFloatOrNull()?.let { it > 0f } == true
+        val location by locationViewModel.addLocation.collectAsState()
+        val suggestions by locationViewModel.suggestions.collectAsState()
+        val loadingSuggestions by locationViewModel.loadingSuggestions.collectAsState()
+        val submit = {
+            if (isValid) {
+                priceViewModel.addPrice(
+                    itemId = itemId,
+                    price = price.toFloat(),
+                    location = locationViewModel.addFields()
+                )
+                locationViewModel.onPriceAdded()
+                locationViewModel.onAddSheetClosed()
+                modalSheetVisibility = false
+                focusManager.clearFocus()
+            }
+        }
         val focusRequester = remember { FocusRequester() }
         LaunchedEffect(Unit) { focusRequester.requestFocus() }
         Column(
@@ -354,33 +424,71 @@ fun AddPriceFab(
                     keyboardType = KeyboardType.Decimal,
                     imeAction = ImeAction.Done
                 ),
-                keyboardActions = KeyboardActions(onDone = {
-                    if (isValid) {
-                        priceViewModel.addPrice(itemId = itemId, price = price.toFloat())
-                        modalSheetVisibility = false
-                        focusManager.clearFocus()
-                    }
-                }),
+                keyboardActions = KeyboardActions(onDone = { submit() }),
                 label = { Text(text = stringResource(R.string.price_bdt)) },
                 prefix = { Text("৳ ") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
             )
+            Spacer(modifier = Modifier.height(12.dp))
+            LocationChip(
+                location = location,
+                suggestions = suggestions,
+                loadingSuggestions = loadingSuggestions,
+                onSuggestion = locationViewModel::selectSuggestion,
+                onTrim = { locationViewModel.trim(LocationTarget.ADD, it) },
+                onClear = { locationViewModel.clear(LocationTarget.ADD) },
+                onTypePlace = { locationViewModel.openSearch(LocationTarget.ADD) },
+                onPickOnMap = { locationViewModel.openMap(LocationTarget.ADD) },
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = {
-                    if (isValid) {
-                        priceViewModel.addPrice(itemId = itemId, price = price.toFloat())
-                        modalSheetVisibility = false
-                        focusManager.clearFocus()
-                    }
-                },
+                onClick = { submit() },
                 enabled = isValid,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = stringResource(R.string.add_price))
             }
         }
+    }
+}
+
+/** e.g. a pin and "Karwan Bazar, Dhaka" for a price with a place; null when it has no location. */
+@Composable
+private fun priceLocationLine(path: List<PlacePathStep>?, locationSource: String?): String? {
+    val label = when {
+        !path.isNullOrEmpty() -> shortPlaceLabel(path)
+        locationSource != null -> stringResource(R.string.pinned_location)
+        else -> return null
+    }
+    return stringResource(R.string.price_location_line, label)
+}
+
+/** The type-a-place and pick-on-map dialogs, for whichever sheet opened them. */
+@Composable
+private fun LocationDialogs(locationViewModel: PriceLocationViewModel) {
+    val search by locationViewModel.search.collectAsState()
+    val mapPicker by locationViewModel.mapPicker.collectAsState()
+    if (search.target != null) {
+        PlaceSearchDialog(
+            query = search.query,
+            results = search.results,
+            loading = search.loading,
+            error = search.error,
+            onQueryChange = locationViewModel::onSearchQuery,
+            onPick = locationViewModel::pickSearchResult,
+            onCreate = locationViewModel::createTypedPlace,
+            onDismiss = locationViewModel::closeSearch,
+        )
+    }
+    if (mapPicker.target != null) {
+        MapPickerDialog(
+            initial = mapPicker.initial,
+            resolving = mapPicker.resolving,
+            error = mapPicker.error,
+            onConfirm = locationViewModel::confirmPin,
+            onDismiss = locationViewModel::closeMap,
+        )
     }
 }

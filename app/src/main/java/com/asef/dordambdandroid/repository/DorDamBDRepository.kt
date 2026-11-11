@@ -4,6 +4,9 @@ import com.asef.dordambdandroid.data.remote.DorDamBDAPI
 import com.asef.dordambdandroid.data.remote.models.items.createitem.CreateItem
 import com.asef.dordambdandroid.data.remote.models.items.edititem.EditItem
 import com.asef.dordambdandroid.data.remote.models.items.summary.ItemSummary
+import com.asef.dordambdandroid.data.remote.models.places.CreatePlace
+import com.asef.dordambdandroid.data.remote.models.places.NearbyPlaces
+import com.asef.dordambdandroid.data.remote.models.places.PlaceView
 import com.asef.dordambdandroid.data.remote.models.prices.addpricebyitemid.AddPriceByItemId
 import com.asef.dordambdandroid.data.remote.models.prices.editprice.EditPrice
 import com.asef.dordambdandroid.data.remote.models.prices.pricebyitemid.PriceByItemId
@@ -113,4 +116,25 @@ class DorDamBDRepository @Inject constructor(
             withTimeout(10_000) { dorDamBDAPI.getPricesByItemId(itemId) }
         } catch (e: Exception) { null }
 
+    // SPEC: spec-5f5a30 — null on any failure: suggestions are skipped silently.
+    suspend fun getNearbyPlaces(lat: Double, lng: Double): NearbyPlaces? =
+        try {
+            withTimeout(10_000) { dorDamBDAPI.getNearbyPlaces(lat, lng) }
+        } catch (e: Exception) { null }
+
+    // SPEC: spec-14240b
+    suspend fun searchPlaces(query: String): Resource<List<PlaceView>> =
+        try {
+            Resource.Success(withTimeout(10_000) { dorDamBDAPI.searchPlaces(query) })
+        } catch (e: Exception) {
+            Resource.Error(errorMessage = e.message ?: "An unknown exception occurred")
+        }
+
+    // SPEC: spec-14240b
+    suspend fun createPlace(place: CreatePlace): Resource<PlaceView> =
+        try {
+            Resource.Success(withTimeout(10_000) { dorDamBDAPI.createPlace(place) })
+        } catch (e: Exception) {
+            Resource.Error(errorMessage = e.message ?: "An unknown exception occurred")
+        }
 }

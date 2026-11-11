@@ -2,10 +2,10 @@ package com.asef.dordambdandroid.ui.screens.pricescreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.asef.dordambdandroid.data.remote.models.items.edititem.EditItem
 import com.asef.dordambdandroid.data.remote.models.prices.addpricebyitemid.AddPriceByItemId
 import com.asef.dordambdandroid.data.remote.models.prices.addpricebyitemid.Item
 import com.asef.dordambdandroid.data.remote.models.prices.editprice.EditPrice
+import com.asef.dordambdandroid.data.remote.models.prices.location.PriceLocationFields
 import com.asef.dordambdandroid.data.remote.models.prices.pricebyitemid.PriceByItemId
 import com.asef.dordambdandroid.repository.DorDamBDRepository
 import com.asef.dordambdandroid.util.Resource
@@ -89,9 +89,12 @@ class PriceViewModel @Inject constructor(
         }
     }
 
-    fun addPrice(itemId: Int, price: Float) {
+    /** [location] null saves the price without one, exactly as before locations existed. */
+    fun addPrice(itemId: Int, price: Float, location: PriceLocationFields? = null) {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = dorDamBDRepository.addPriceByItemId(AddPriceByItemId(item = Item(itemId), price = price))
+            val response = dorDamBDRepository.addPriceByItemId(
+                AddPriceByItemId(item = Item(itemId), price = price, location = location)
+            )
             response.catch {
                 Timber.e("Error $this")
             }
@@ -120,9 +123,10 @@ class PriceViewModel @Inject constructor(
         }
     }
 
-    fun editItem(id: Int, price: Float) {
+    /** [location] null leaves the price's location as it is; [PriceLocationFields.NONE] removes it. */
+    fun editItem(id: Int, price: Float, location: PriceLocationFields? = null) {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = dorDamBDRepository.editPrice(id, EditPrice(price))
+            val response = dorDamBDRepository.editPrice(id, EditPrice(price, location))
             response.catch {
                 Timber.e("Error $this")
             }.collect {
