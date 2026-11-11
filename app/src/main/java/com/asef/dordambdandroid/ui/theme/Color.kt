@@ -32,9 +32,11 @@ val IndigoInverseSurface         = Color(0xFF313031)
 val IndigoInverseOnSurface       = Color(0xFFF4F0F1)
 val IndigoInversePrimary         = Color(0xFFC0C1FF)
 
-// Custom trend colors for light theme
-val LightTrendUp                 = Color(0xFF16A34A)
-val LightTrendDown               = Color(0xFFDC2626)
+// Custom trend colors for light theme.
+// A price rise is bad for the buyer, so UP is red and DOWN is green.
+// SPEC: spec-2911cf
+val LightTrendUp                 = Color(0xFFDC2626)
+val LightTrendDown               = Color(0xFF16A34A)
 
 // ── Dark scheme ─────────────────────────────────────────────────────────────
 val IndigoPrimaryDark                = Color(0xFFC0C1FF)
@@ -66,6 +68,7 @@ val IndigoInverseSurfaceDark         = Color(0xFFE5E2E3)
 val IndigoInverseOnSurfaceDark       = Color(0xFF313031)
 val IndigoInversePrimaryDark         = Color(0xFF494BD6)
 
-// Custom trend colors for dark theme
-val DarkTrendUp                  = Color(0xFF4ADE80)
-val DarkTrendDown                = Color(0xFFF87171)
+// Custom trend colors for dark theme (UP red, DOWN green).
+// SPEC: spec-2911cf
+val DarkTrendUp                  = Color(0xFFF87171)
+val DarkTrendDown                = Color(0xFF4ADE80)

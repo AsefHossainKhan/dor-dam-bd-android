@@ -89,6 +89,14 @@ data class ExtendedColors(
 
 val LocalExtendedColors = staticCompositionLocalOf { ExtendedColors() }
 
+/** Trend colours for the given theme: UP (price rise) red, DOWN (price fall) green. SPEC: spec-2911cf */
+fun extendedColorsFor(darkTheme: Boolean): ExtendedColors =
+    if (darkTheme) {
+        ExtendedColors(trendUp = DarkTrendUp, trendDown = DarkTrendDown)
+    } else {
+        ExtendedColors(trendUp = LightTrendUp, trendDown = LightTrendDown)
+    }
+
 // ── Custom extended typography ──────────────────────────────────────────────
 @Immutable
 data class ExtendedTypography(
@@ -104,11 +112,7 @@ fun DorDamBDAndroidTheme(
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-    val extendedColors = if (darkTheme) {
-        ExtendedColors(trendUp = DarkTrendUp, trendDown = DarkTrendDown)
-    } else {
-        ExtendedColors(trendUp = LightTrendUp, trendDown = LightTrendDown)
-    }
+    val extendedColors = extendedColorsFor(darkTheme)
 
     val extendedTypography = ExtendedTypography(
         price = TextStyle(
